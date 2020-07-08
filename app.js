@@ -12,13 +12,13 @@ db.authenticate()
   .catch((err) => console.log('Error: ' + err));
 
 // Middleware
-app.engine('handlebars', exphbs({ defaultLayout: 'main' }));
+app.engine('handlebars', exphbs({ defaultLayout: 'main' })); // declare default handlebars layout
 app.set('view engine', 'handlebars');
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.get('/', (req, res) => {
-  res.send('INDEX');
+  res.render('index', { layout: 'landing' });
 });
 
 // Gig routes
