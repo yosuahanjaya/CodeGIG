@@ -14,6 +14,7 @@ db.authenticate()
 // Middleware
 app.engine('handlebars', exphbs({ defaultLayout: 'main' })); // declare default handlebars layout
 app.set('view engine', 'handlebars');
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes

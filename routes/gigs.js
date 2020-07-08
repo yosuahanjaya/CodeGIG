@@ -1,5 +1,7 @@
 // Library
 const express = require('express');
+const Sequelize = require('sequelize'); // in order to search
+const Op = Sequelize.Op;
 
 // Instances
 const router = express.Router();
@@ -22,7 +24,6 @@ router.get('/', (req, res) =>
           };
         }),
       };
-      console.log(gigs);
       res.render('gigs', { gigs: context.userDocuments });
     })
     .catch((err) => console.log(err))
@@ -33,18 +34,68 @@ router.get('/add', (req, res) => res.render('add'));
 
 // POST a gig
 router.post('/add', (req, res) => {
-  const data = {
-    title: 'Simple Wordpress app',
-    technologies: 'wordpress, javascript, html, css',
-    budget: '$2500',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-    contact_email: 'user2@gmail.com',
-  };
+  let { title, technologies, budget, description, contact_email } = req.body;
+  let errors = [];
 
-  let { title, technologies, budget, description, contact_email } = data;
-  Gig.create({ title, technologies, budget, description, contact_email })
-    .then((gig) => res.redirect('/gigs'))
+  if (!title) {
+    errors.push({ text: 'Please add title!' });
+  }
+
+  if (!technologies) {
+    errors.push({ text: 'Please add some technologies!' });
+  }
+
+  if (!description) {
+    errors.push({ text: 'Please add a description!' });
+  }
+
+  if (!contact_email) {
+    errors.push({ text: 'Please add contact email!' });
+  }
+
+  if (errors.length > 0) {
+    res.render('add', {
+      errors,
+      title,
+      technologies,
+      budget,
+      description,
+      contact_email,
+    });
+  } else {
+    if (!budget) {
+      budget = 'unknown';
+    } else {
+      budget = `$${budget}`;
+    }
+
+    technologies = technologies.toLowerCase().replace(/, /g, ',');
+
+    Gig.create({ title, technologies, budget, description, contact_email })
+      .then((gig) => res.redirect('/gigs'))
+      .catch((err) => console.log(err));
+  }
+});
+
+// Search for Gigs
+router.get('/search', (req, res) => {
+  const { term } = req.query;
+
+  Gig.findAll({ where: { technologies: { [Op.like]: '%' + term + '%' } } })
+    .then((gigs) => {
+      const context = {
+        userDocuments: gigs.map((document) => {
+          return {
+            title: document.title,
+            technologies: document.technologies,
+            description: document.description,
+            budget: document.budget,
+            contact_email: document.contact_email,
+          };
+        }),
+      };
+      res.render('gigs', { gigs: context.userDocuments });
+    })
     .catch((err) => console.log(err));
 });
 
