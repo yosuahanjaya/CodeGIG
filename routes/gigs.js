@@ -28,8 +28,11 @@ router.get('/', (req, res) =>
     .catch((err) => console.log(err))
 );
 
+// Display add Gig Form
+router.get('/add', (req, res) => res.render('add'));
+
 // POST a gig
-router.get('/add', (req, res) => {
+router.post('/add', (req, res) => {
   const data = {
     title: 'Simple Wordpress app',
     technologies: 'wordpress, javascript, html, css',
